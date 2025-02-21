@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Control of Dividas</title>
+</head>
+<body>
+    <header>
+        <h1>Controle Finanças</h1>
+    </header>
+
+        <section id="financas">
+        
+            <!--<button id="adicionarTransacao">Adicionar Transação</button>-->
+            <div id="resumo">
+                <p>Saldo Atual: <span id="saldo">R$ 0,00</span></p>
+            </div>
+            <form id="formTransacao">
+                <label for="mes">Mês:</label>
+                <input type="month" id="mes" required >
+
+                <label for="tipo">Tipo de Divida:</label>
+                <select id="tipo">
+                    <option>Agua</option>
+                    <option>Luz</option>
+                    <option>Cartão de Credito</option>
+                    <option>Emprestimo</option>
+                    <option>Gasolina</option>
+                    <option>Outros</option>
+                    <option>Dizimo</option>
+                    <option>Internet</option>
+                </select>
+                
+                <label for="descricao">Descrição:</label>
+                <input type="text" id="descricao" placeholder="Ex: Água, Luz, Empréstimo" required>
+                
+                <label for="valor">Valor:</label>
+                <input type="text" id="valor" placeholder="R$ 0,00" required>
+                
+                <label for="pago">Pago:</label>
+                <input type="checkbox" id="pago">
+                
+                <button type="submit">Adicionar</button>
+            </form>
+            <ul id="listaTransacoes"></ul>
+        </section>
+    </main>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("formTransacao");
+    const listaTransacoes = document.getElementById("listaTransacoes");
+    const saldoElemento = document.getElementById("saldo");
+    let saldo = 0;
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const mes = document.getElementById("mes").value;
+        const tipo = document.getElementById("tipo")?.value || "";
+        const descricao = document.getElementById("descricao").value;
+        const valor = parseFloat(document.getElementById("valor").value.replace(",", "."));
+        const pago = document.getElementById("pago").checked;
+
+        if (!mes || !descricao || !tipo || isNaN(valor)) {
+            alert("Preencha todos os campos corretamente!");
+            return;
+        }
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${mes}</td>
+            <td>${tipo}</td>
+            <td>${descricao}</td>
+            <td>R$ ${valor.toFixed(2)}</td>
+            <td><input type="checkbox" class="checkbox-pago" ${pago ? "checked" : ""}></td>
+            <td><button class="remover">X</button></td>
+        `;
+
+        listaTransacoes.appendChild(row);
+
+        if (!pago) {
+            saldo -= valor;
+        }
+        atualizarSaldo();
+
+        form.reset();
+    });
+
+    listaTransacoes.addEventListener("click", (event) => {
+        if (event.target.classList.contains("remover")) {
+            const row = event.target.parentElement.parentElement;
+            const valor = parseFloat(row.cells[3].textContent.replace("R$ ", "").replace(",", "."));
+            const pago = row.querySelector(".checkbox-pago").checked;
+
+            if (!pago) {
+                saldo += valor;
+            }
+            row.remove();
+            atualizarSaldo();
+        }
+        
+        if (event.target.classList.contains("checkbox-pago")) {
+            const row = event.target.parentElement.parentElement;
+            const valor = parseFloat(row.cells[3].textContent.replace("R$ ", "").replace(",", "."));
+            if (event.target.checked) {
+                saldo += valor;
+            } else {
+                saldo -= valor;
+            }
+            atualizarSaldo();
+        }
+    });
+
+    function atualizarSaldo() {
+        saldoElemento.textContent = `R$ ${saldo.toFixed(2)}`;
+        saldoElemento.style.color = saldo < 0 ? "red" : "cyan";
+    }
+});
+</script>        
+
+</body>
+</html>
